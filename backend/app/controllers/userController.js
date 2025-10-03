@@ -1,4 +1,5 @@
 import asyncHandler from "express-async-handler";
+
 import User from "../models/user.js";
 import { userSchema } from "../../../shared/validation_schema/schema.js";
 
@@ -37,4 +38,32 @@ export const createUser = asyncHandler(async (req, res) => {
 export const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find();
   res.json(users);
+});
+
+// @desc     Login user
+// @route    POST /api/users/login
+// @access   Public
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = await userSchema
+    .pick({ email: true, password: true })
+    .parseAsync(req.body);
+
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    res.status(401); // Unauthorized
+    throw new Error("Invalid Email");
+  }
+
+  const isMatch = await user.matchPassword(password);
+  if (!isMatch) {
+    res.status(401);
+    throw new Error("Invalid Password");
+  }
+
+  res.status(200).json({
+    message: "Login Sucessful",
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+  });
 });

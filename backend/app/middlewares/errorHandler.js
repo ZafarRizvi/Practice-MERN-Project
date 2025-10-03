@@ -16,5 +16,8 @@ export const errorHandler = (err, req, res, next) => {
 
   return res.status(statusCode).json({
     message: err.message || "Something went wrong",
+    // stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    // In production, we hide stack trace for security
+    // In development, show the stack trace for debugging
   });
 };
